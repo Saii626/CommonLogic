@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'idea'
+}
+
+group 'app.saikat'
+version '1.0.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    testLogging.showStandardStreams =true
+
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: " + descriptor)
+    }
+}
+
+dependencies {
+    implementation project(':PojoCollections')
+    implementation project(':ConfigurationManagement')
+    implementation project(':DIManagement')
+    implementation project(':LogManagement')
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}

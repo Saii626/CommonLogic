@@ -1,0 +1,7 @@
+include ':PojoCollections', ':DIManagement', ':LogManagement', ':ConfigurationManagement'
+project(':PojoCollections').projectDir = file('../PojoCollections')
+project(':ConfigurationManagement').projectDir = file('../ConfigurationManagement')
+project(':DIManagement').projectDir = file('../DIManagement')
+project(':LogManagement').projectDir = file('../LogManagement')
+
+rootProject.name = 'CommonLogic'
