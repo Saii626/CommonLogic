@@ -17,63 +17,63 @@ import app.saikat.DIManagement.Provides;
 
 class ThreadPoolManagerImpl implements ThreadPoolManager {
 
-    private final ThreadPoolConfig poolConfig;
-    private final Map<String, ThreadPoolExecutor> threadPools;
+	private final ThreadPoolConfig poolConfig;
+	private final Map<String, ThreadPoolExecutor> threadPools;
 
-    private Logger logger = LoggerFactory.getLogger(ThreadPoolManager.class);
+	private Logger logger = LoggerFactory.getLogger(ThreadPoolManager.class);
 
 
-    public ThreadPoolManagerImpl(ThreadPoolConfig threadPoolConfig) {
+	public ThreadPoolManagerImpl(ThreadPoolConfig threadPoolConfig) {
 
-        threadPools = new HashMap<>();
-        poolConfig = threadPoolConfig;
+		threadPools = new HashMap<>();
+		poolConfig = threadPoolConfig;
 
-        poolConfig.getThreadPoolConfig()
-                .forEach((name, config) -> {
-                    logger.debug("Creating threadpool {} with config: {}", name, config);
+		poolConfig.getThreadPoolConfig()
+				.forEach((name, config) -> {
+					logger.debug("Creating threadpool {} with config: {}", name, config);
 
-                    ThreadPoolExecutor executor = new ThreadPoolExecutor(config.getCoreThreads(),
-                            config.getMaxThreads(), config.getTtl(), TimeUnit.SECONDS, new SynchronousQueue<>(), new CustomThreadFactory(name));
-                    threadPools.put(name, executor);
-                });
+					ThreadPoolExecutor executor = new ThreadPoolExecutor(config.getCoreThreads(),
+							config.getMaxThreads(), config.getTtl(), TimeUnit.SECONDS, new SynchronousQueue<>(), new CustomThreadFactory(name));
+					threadPools.put(name, executor);
+				});
 
-        Runtime.getRuntime()
-                .addShutdownHook(new Thread(() -> threadPools.forEach((name, executor) -> executor.shutdown())));
-    }
+		Runtime.getRuntime()
+				.addShutdownHook(new Thread(() -> threadPools.forEach((name, executor) -> executor.shutdown())));
+	}
 
-    @Override
-    public Future<?> execute(Runnable runnable, String name) throws NoSuchThreadPoolException {
-        ThreadPoolExecutor executor = getThreadPool(name);
-        return executor.submit(runnable);
-    }
+	@Override
+	public Future<?> execute(Runnable runnable, String name) throws NoSuchThreadPoolException {
+		ThreadPoolExecutor executor = getThreadPool(name);
+		return executor.submit(runnable);
+	}
 
-    @Override
-    public <T> Future<T> execute(Runnable runnable, T result, String name) throws NoSuchThreadPoolException {
-        ThreadPoolExecutor executor = getThreadPool(name);
-        return executor.submit(runnable, result);
-    }
+	@Override
+	public <T> Future<T> execute(Runnable runnable, T result, String name) throws NoSuchThreadPoolException {
+		ThreadPoolExecutor executor = getThreadPool(name);
+		return executor.submit(runnable, result);
+	}
 
-    @Override
-    public <T> Future<T> execute(Callable<T> callable, String name) throws NoSuchThreadPoolException {
-        ThreadPoolExecutor executor = getThreadPool(name);
-        return executor.submit(callable);
-    }
+	@Override
+	public <T> Future<T> execute(Callable<T> callable, String name) throws NoSuchThreadPoolException {
+		ThreadPoolExecutor executor = getThreadPool(name);
+		return executor.submit(callable);
+	}
 
-    @Override
-    public boolean allocateThreadPoolIfNotPresent(int coreThreads, int maxThreads, long ttl, String name) {
-        poolConfig.addToThreadPool(name, new Config(coreThreads, maxThreads, ttl));
-        return false;
-    }
+	@Override
+	public boolean allocateThreadPoolIfNotPresent(int coreThreads, int maxThreads, long ttl, String name) {
+		poolConfig.addToThreadPool(name, new Config(coreThreads, maxThreads, ttl));
+		return false;
+	}
 
-    private ThreadPoolExecutor getThreadPool(String name) throws NoSuchThreadPoolException {
-        if (!threadPools.containsKey(name))
-            throw new NoSuchThreadPoolException(name);
+	private ThreadPoolExecutor getThreadPool(String name) throws NoSuchThreadPoolException {
+		if (!threadPools.containsKey(name))
+			throw new NoSuchThreadPoolException(name);
 
-        return threadPools.get(name);
-    }
+		return threadPools.get(name);
+	}
 
-    @Provides
-    public static ThreadPoolManager getThreadPoolManager(ThreadPoolConfig config) {
-        return new ThreadPoolManagerImpl(config);
-    }
+	@Provides
+	public static ThreadPoolManager getThreadPoolManager(ThreadPoolConfig config) {
+		return new ThreadPoolManagerImpl(config);
+	}
 }
