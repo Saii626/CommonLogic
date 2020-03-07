@@ -1,4 +1,4 @@
-package app.saikat.CommonLogic.Threads;
+package app.saikat.ThreadManagement.impl;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import app.saikat.LogManagement.Logger;
-import app.saikat.LogManagement.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CustomThreadFactory implements ThreadFactory {
 
@@ -17,7 +17,7 @@ public class CustomThreadFactory implements ThreadFactory {
 	private String poolName;
 	
 	// Shared data across all factories
-	private static Logger logger = LoggerFactory.getLogger(CustomThreadFactory.class);
+	private static Logger logger = LogManager.getLogger(CustomThreadFactory.class);
 	private static AtomicInteger aliveThreadCount = new AtomicInteger(0);
 	private static List<Thread> allThreads = Collections.synchronizedList(new ArrayList<>());
 

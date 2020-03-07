@@ -1,7 +1,12 @@
-include ':PojoCollections', ':DIManagement', ':LogManagement', ':ConfigurationManagement'
-project(':PojoCollections').projectDir = file('../PojoCollections')
-project(':ConfigurationManagement').projectDir = file('../ConfigurationManagement')
-project(':DIManagement').projectDir = file('../DIManagement')
-project(':LogManagement').projectDir = file('../LogManagement')
+include ':Annotations', ':ConfigurationManagement', ':GsonManagement', ':DIManagement', ':PojoCollections'
 
-rootProject.name = 'CommonLogic'
+project(':Annotations').projectDir = file('../Annotations')
+project(':GsonManagement').projectDir = file('../GsonManagement')
+project(':ConfigurationManagement').projectDir = file('../ConfigurationManagement')
+
+
+// Test implementations
+project(':DIManagement').projectDir = file('../DIManagement')
+project(':PojoCollections').projectDir = file('../PojoCollections')
+
+rootProject.name = 'ThreadManagement'

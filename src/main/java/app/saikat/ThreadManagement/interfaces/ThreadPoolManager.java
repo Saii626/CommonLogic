@@ -1,10 +1,13 @@
-package app.saikat.CommonLogic.Threads;
+package app.saikat.ThreadManagement.interfaces;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import app.saikat.LogManagement.Logger;
-import app.saikat.LogManagement.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import app.saikat.ThreadManagement.exceptions.NoSuchThreadPoolException;
+
 
 
 public interface ThreadPoolManager {
@@ -15,7 +18,7 @@ public interface ThreadPoolManager {
 	 */
 	String GLOBAL_POOL = "global";
 
-	Logger logger = LoggerFactory.getLogger(ThreadPoolManager.class);
+	Logger logger = LogManager.getLogger(ThreadPoolManager.class);
 
 	/**
 	 * Executes the runnable in a threadPool named GLOBAL_POOL

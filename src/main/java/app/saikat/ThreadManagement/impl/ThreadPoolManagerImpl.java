@@ -1,4 +1,4 @@
-package app.saikat.CommonLogic.Threads;
+package app.saikat.ThreadManagement.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,19 +8,22 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import app.saikat.LogManagement.Logger;
-import app.saikat.LogManagement.LoggerFactory;
+import app.saikat.Annotations.DIManagement.Provides;
+import app.saikat.ThreadManagement.exceptions.NoSuchThreadPoolException;
+import app.saikat.ThreadManagement.impl.ThreadPoolConfig.Config;
+import app.saikat.ThreadManagement.interfaces.ThreadPoolManager;
 
-import app.saikat.CommonLogic.Threads.ThreadPoolConfig.Config;
-import app.saikat.DIManagement.Provides;
+// import app.saikat.DIManagement.Provides;
 
 class ThreadPoolManagerImpl implements ThreadPoolManager {
 
 	private final ThreadPoolConfig poolConfig;
 	private final Map<String, ThreadPoolExecutor> threadPools;
 
-	private Logger logger = LoggerFactory.getLogger(ThreadPoolManager.class);
+	private Logger logger = LogManager.getLogger(ThreadPoolManager.class);
 
 
 	public ThreadPoolManagerImpl(ThreadPoolConfig threadPoolConfig) {

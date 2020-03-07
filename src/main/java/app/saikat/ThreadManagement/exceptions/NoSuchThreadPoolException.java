@@ -1,4 +1,4 @@
-package app.saikat.CommonLogic.Threads;
+package app.saikat.ThreadManagement.exceptions;
 
 public class NoSuchThreadPoolException extends Exception {
 

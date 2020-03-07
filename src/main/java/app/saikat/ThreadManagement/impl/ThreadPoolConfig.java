@@ -1,10 +1,11 @@
-package app.saikat.CommonLogic.Threads;
+package app.saikat.ThreadManagement.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import app.saikat.Annotations.DIManagement.Provides;
 import app.saikat.ConfigurationManagement.interfaces.ConfigurationManager;
-import app.saikat.DIManagement.Provides;
+import app.saikat.ThreadManagement.interfaces.ThreadPoolManager;
 
 public class ThreadPoolConfig {
 

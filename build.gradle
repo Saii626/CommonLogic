@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'idea'
+    id 'java-library'
 }
 
 group 'app.saikat'
@@ -12,19 +13,53 @@ repositories {
     mavenCentral()
 }
 
-test {
-    testLogging.showStandardStreams =true
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
 
-    beforeTest { descriptor ->
-        logger.lifecycle("Running test: " + descriptor)
-    }
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+task copyToLib(type: Copy) {
+    into "$buildDir/libs/separate-jars"
+    from configurations.runtimeClasspath
+}
+
+task copyProj(type: Copy) {
+  from "$buildDir/libs/" + jar.archiveFileName.get()
+  into "$buildDir/libs/separate-jars"
+}
+
+task fatJar(type: Jar) {
+    classifier = 'fat'
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    destinationDirectory = file("$buildDir/libs/fat")
+    with jar
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+build.finalizedBy(copyToLib)
+build.finalizedBy(fatJar)
+build.dependsOn(copyProj)
+
+test {
+    useJUnit()
 }
 
 dependencies {
-    implementation project(':PojoCollections')
+    implementation project(':Annotations')
     implementation project(':ConfigurationManagement')
-    implementation project(':DIManagement')
-    implementation project(':LogManagement')
 
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.12.1'
+
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.12.1'
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
