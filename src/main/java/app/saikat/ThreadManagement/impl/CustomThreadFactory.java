@@ -1,14 +1,13 @@
 package app.saikat.ThreadManagement.impl;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import app.saikat.Annotations.ThreadManagement.Stats;
 
 public class CustomThreadFactory implements ThreadFactory {
 
@@ -19,7 +18,20 @@ public class CustomThreadFactory implements ThreadFactory {
 	// Shared data across all factories
 	private static Logger logger = LogManager.getLogger(CustomThreadFactory.class);
 	private static AtomicInteger aliveThreadCount = new AtomicInteger(0);
-	private static List<Thread> allThreads = Collections.synchronizedList(new ArrayList<>());
+
+	@SuppressWarnings("unused")				// Converted to string for printing. Uses reflection to figure out fields
+	public static class ThreadStat {
+		private int noOfAliveThreads;
+
+		public ThreadStat(int noOfAliveThreads) {
+			this.noOfAliveThreads = noOfAliveThreads;
+		}
+	}
+
+	@Stats
+	private static ThreadStat threadStat() {
+		return new ThreadStat(aliveThreadCount.get());
+	}
 
 	public CustomThreadFactory(String poolName) {
 		this.poolName = poolName;
@@ -30,16 +42,9 @@ public class CustomThreadFactory implements ThreadFactory {
 
 		Thread t = new Thread(() -> {
 			logger.debug("Starting thread {} at {}. Total {} input_threads alive", Thread.currentThread().getName(), Instant.now().toEpochMilli(), aliveThreadCount.incrementAndGet());
-
-			synchronized(allThreads) {
-				allThreads.add(Thread.currentThread());
-			}
+			id.incrementAndGet();
 
 			r.run();
-
-			synchronized(allThreads) {
-				allThreads.remove(Thread.currentThread());
-			}
 
 			logger.debug("Stopping thread {} at {}. Total {} input_threads alive", Thread.currentThread().getName(), Instant.now().toEpochMilli(), aliveThreadCount.decrementAndGet());
 		});

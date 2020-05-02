@@ -23,6 +23,7 @@ public interface ThreadPoolManager {
 	/**
 	 * Executes the runnable in a threadPool named GLOBAL_POOL
 	 * @param runnable the runnable to execute
+	 * @return a Future object which can be used to obtain the result
 	 */
 	default Future<?> execute(Runnable runnable) {
 		try {

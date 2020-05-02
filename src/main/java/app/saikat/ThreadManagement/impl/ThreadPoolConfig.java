@@ -39,6 +39,7 @@ public class ThreadPoolConfig {
 	}
 
 	private Map<String, Config> threadPools;
+	private int scheduledThreadsSize;
 
 	public ThreadPoolConfig() {
 		threadPools = new HashMap<>();
@@ -46,6 +47,10 @@ public class ThreadPoolConfig {
 
 	public Map<String, Config> getThreadPoolConfig() {
 		return threadPools;
+	}
+
+	public int getScheduledThreadsSize() {
+		return scheduledThreadsSize;
 	}
 
 	public void addToThreadPool(String name, Config config) {
@@ -56,7 +61,8 @@ public class ThreadPoolConfig {
 	public static ThreadPoolConfig getThreadPoolConfig(ConfigurationManager configurationManager) {
 		return configurationManager.<ThreadPoolConfig>get("thread_pools").orElseGet(() -> {
 			ThreadPoolConfig config = new ThreadPoolConfig();
-			config.addToThreadPool(ThreadPoolManager.GLOBAL_POOL, new Config(4, 15, 30));
+			config.addToThreadPool(ThreadPoolManager.GLOBAL_POOL, new Config(2, 4, 30));
+			config.scheduledThreadsSize = 2;
 
 			configurationManager.put("thread_pools", config);
 			return config;

@@ -3,9 +3,6 @@ include ':Annotations', ':ConfigurationManagement', ':GsonManagement', ':DIManag
 project(':Annotations').projectDir = file('../Annotations')
 project(':GsonManagement').projectDir = file('../GsonManagement')
 project(':ConfigurationManagement').projectDir = file('../ConfigurationManagement')
-
-
-// Test implementations
 project(':DIManagement').projectDir = file('../DIManagement')
 project(':PojoCollections').projectDir = file('../PojoCollections')
 
