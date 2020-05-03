@@ -39,12 +39,12 @@ class SchedulerImpl implements Scheduler {
 
 	@Override
 	public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, double interval) {
-		return scheduledThreadPoolExecutor
-				.scheduleWithFixedDelay(command, 1, Math.round(1 / interval), TimeUnit.SECONDS);
+		return scheduledThreadPoolExecutor.scheduleWithFixedDelay(command, 1, Math.round(1 / interval),
+				TimeUnit.SECONDS);
 	}
 
 	@Override
-	public Map<DIBean<?>, Set<Tuple<TaskProvider<?, ?>, ScheduledFuture<?>>>> getTasksMap(){ 
+	public Map<DIBean<?>, Set<Tuple<TaskProvider<?, ?>, ScheduledFuture<?>>>> getTasksMap() {
 		return tasksMap;
 	}
 

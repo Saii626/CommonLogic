@@ -25,7 +25,6 @@ class ThreadPoolManagerImpl implements ThreadPoolManager {
 
 	private Logger logger = LogManager.getLogger(ThreadPoolManager.class);
 
-
 	public ThreadPoolManagerImpl(ThreadPoolConfig threadPoolConfig) {
 
 		threadPools = new HashMap<>();

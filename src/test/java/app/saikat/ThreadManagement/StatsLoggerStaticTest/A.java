@@ -2,27 +2,19 @@ package app.saikat.ThreadManagement.StatsLoggerStaticTest;
 
 import java.time.Instant;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
 import app.saikat.Annotations.ThreadManagement.Stats;
 
 public class A {
 
 	private static int counter = 0;
 
-	@SuppressWarnings("unused")
-	private static class A_Stat {
-		private int counter;
-		private long timestamp;
-
-		public A_Stat(int counter) {
-			this.counter = counter;
-			this.timestamp = Instant.now().toEpochMilli();
-		}
-	}
-
 	@Stats(rate = 1)
-	private static A_Stat getAStatistics() {
+	private static void printStats(Logger statsLogger) {
 		++counter;
-		return new A_Stat(counter);
+		statsLogger.printf(Level.INFO, "A{counter:%d, currTime:%d}", counter, Instant.now().toEpochMilli());
 	}
 
 	public static int getCounter() {

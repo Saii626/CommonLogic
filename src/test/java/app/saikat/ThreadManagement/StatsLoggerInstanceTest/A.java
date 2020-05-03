@@ -4,6 +4,9 @@ import java.time.Instant;
 
 import javax.inject.Inject;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
 import app.saikat.Annotations.ThreadManagement.Stats;
 
 public class A {
@@ -12,20 +15,6 @@ public class A {
 
     private int counter = 0;
     private String str = "not set";
-
-    @SuppressWarnings("unused")
-    public static class A_Stat {
-        private String str;
-        private int counter;
-        private long timestamp;
-
-        public A_Stat(int counter, String str) {
-            this.counter = counter;
-            this.timestamp = Instant.now()
-                    .toEpochMilli();
-            this.str = str;
-        }
-    }
 
     @Inject
     public A() {
@@ -36,10 +25,12 @@ public class A {
     }
 
     @Stats(rate = 1)
-    private A_Stat getAStatistics() {
+    private void printStatistics(Logger statsLogger) {
         ++counter;
         ++c;
-        return new A_Stat(counter, str);
+        statsLogger.printf(Level.INFO, "A={name=%s, staticCounter:%d, instanceCounter:%d, currTime:%d}", str, c,
+                counter, Instant.now()
+                        .toEpochMilli());
     }
 
     public int getCounter() {

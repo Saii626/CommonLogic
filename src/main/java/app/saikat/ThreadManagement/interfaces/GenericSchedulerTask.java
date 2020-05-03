@@ -41,8 +41,6 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 
 	protected abstract ScheduledFuture<TYPE> scheduleExecutingProvider(Provider<TYPE> provider);
 
-	protected abstract TaskProvider<PARENT, TYPE> createTask(DIBean<TYPE> weakTask, ConstantProviderBean<PARENT> dummyParentProvider);
-
 	public void setSchedulerAndExecute(Scheduler scheduler) {
 		this.scheduler = scheduler;
 
@@ -67,8 +65,9 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 		DIBean<PARENT> parentBean = (DIBean<PARENT>) this.task.getDependencies()
 				.get(0);
 
-		TypeToken<WeakReference<PARENT>> weakReference = new TypeToken<WeakReference<PARENT>>() {}
-				.where(new TypeParameter<PARENT>() {}, parentBean.getProviderType());
+		TypeToken<WeakReference<PARENT>> weakReference = new TypeToken<WeakReference<PARENT>>() {
+		}.where(new TypeParameter<PARENT>() {
+		}, parentBean.getProviderType());
 
 		ConstantProviderBean<WeakReference<PARENT>> weakProvider = new ConstantProviderBean<>(weakReference,
 				parentBean.getQualifier());
@@ -85,7 +84,9 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 					instanceTaskCopy.getDependencies()
 							.set(0, weakProviderCopy);
 
-					TaskProvider<PARENT, TYPE> taskRunner = createTask(instanceTaskCopy, strongProvider);
+					TaskProvider<PARENT, TYPE> taskRunner = new TaskProvider<>(instanceTaskCopy, strongProvider,
+							injectBeanManager, postConstructBeanManager);
+
 					ScheduledFuture<TYPE> scheduledTask = scheduleExecutingProvider(taskRunner);
 
 					Tuple<TaskProvider<?, ?>, ScheduledFuture<?>> tuple = Tuple.of(taskRunner, scheduledTask);
@@ -97,49 +98,4 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 					CommonFunc.safeAddToMapSet(this.scheduler.getTasksMap(), this.task, tuple);
 				});
 	}
-
-	// private class TaskProvider<U> implements Provider<U> {
-
-	// 	private final DIBean<U> weakInstanceCopy;
-	// 	private final ConstantProviderBean<T> strongEmptyProvider;
-
-	// 	private Consumer<TaskProvider<U>> onParentDied;
-
-	// 	public TaskProvider(DIBean<U> instanceTaskCopy, ConstantProviderBean<T> strongProvider) {
-	// 		this.weakInstanceCopy = instanceTaskCopy;
-	// 		this.strongEmptyProvider = strongProvider;
-	// 	}
-
-	// 	public void setOnParentDied(Consumer<TaskProvider<U>> onParentDied) {
-	// 		this.onParentDied = onParentDied;
-	// 	}
-
-	// 	@Override
-	// 	@SuppressWarnings("unchecked")
-	// 	public U get() {
-	// 		T parent = ((WeakReference<T>) weakInstanceCopy.getDependencies()
-	// 				.get(0)
-	// 				.getProvider()
-	// 				.get()).get();
-
-	// 		if (parent != null) {
-	// 			ConstantProviderBean<T> providerBean = strongEmptyProvider.copy();
-	// 			providerBean.setProvider(() -> (T) parent);
-
-	// 			DIBean<?> invocationTaskCopy = this.weakInstanceCopy.copy();
-	// 			invocationTaskCopy.getDependencies()
-	// 					.set(0, providerBean);
-
-	// 			ProviderImpl<U> provider = new ProviderImpl<>((DIBeanImpl<U>) invocationTaskCopy, injectBeanManager,
-	// 					postConstructBeanManager);
-
-	// 			return provider.get();
-
-	// 		} else {
-	// 			onParentDied.accept(this);
-	// 			return null;
-	// 		}
-	// 	}
-
-	// }
 }

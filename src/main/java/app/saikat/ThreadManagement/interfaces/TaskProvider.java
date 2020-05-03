@@ -8,6 +8,8 @@ import javax.inject.Provider;
 import app.saikat.DIManagement.Impl.BeanManagers.InjectBeanManager;
 import app.saikat.DIManagement.Impl.BeanManagers.PostConstructBeanManager;
 import app.saikat.DIManagement.Impl.DIBeans.ConstantProviderBean;
+import app.saikat.DIManagement.Impl.DIBeans.DIBeanImpl;
+import app.saikat.DIManagement.Impl.ExternalImpl.ProviderImpl;
 import app.saikat.DIManagement.Interfaces.DIBean;
 
 /**
@@ -15,7 +17,7 @@ import app.saikat.DIManagement.Interfaces.DIBean;
  * @param <PARENT> type of parent
  * @param <TYPE> type of the bean
  */
-public abstract class TaskProvider<PARENT, TYPE> implements Provider<TYPE> {
+public class TaskProvider<PARENT, TYPE> implements Provider<TYPE> {
 
     protected final DIBean<TYPE> weakInstanceCopy;
     protected final WeakReference<PARENT> weakParent;
@@ -74,7 +76,11 @@ public abstract class TaskProvider<PARENT, TYPE> implements Provider<TYPE> {
         }
     }
 
-    protected abstract TYPE executeBean(DIBean<TYPE> bean);
+    protected TYPE executeBean(DIBean<TYPE> bean) {
+        ProviderImpl<TYPE> provider = new ProviderImpl<>((DIBeanImpl<TYPE>) bean, injectBeanManager,
+                postConstructBeanManager);
+        return provider.get();
+    }
 
     WeakReference<PARENT> getWeakParent() {
         return weakParent;

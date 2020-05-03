@@ -10,6 +10,7 @@ import javax.inject.Provider;
 
 import org.junit.Test;
 
+import app.saikat.Annotations.ThreadManagement.Stats;
 import app.saikat.DIManagement.Exceptions.BeanNotFoundException;
 import app.saikat.DIManagement.Interfaces.DIBean;
 import app.saikat.DIManagement.Interfaces.DIManager;
@@ -40,7 +41,12 @@ public class TestStats {
 		assertEquals("Still no logger running as no instance created", 0, A.getC());
 
 		DIBean<A> aBean = manager.getBeanOfType(A.class);
-		DIBean<A.A_Stat> aStatBean = manager.getBeanOfType(A.A_Stat.class);
+		DIBean<?> aStatBean = manager.getBeansWithType(Stats.class)
+				.parallelStream()
+				.filter(b -> aBean.equals(b.getDependencies()
+						.get(0)))
+				.findAny()
+				.get();
 		Provider<A> aProvider = aBean.getProvider();
 
 		A a = aProvider.get();

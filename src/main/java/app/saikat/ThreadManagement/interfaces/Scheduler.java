@@ -27,8 +27,8 @@ public interface Scheduler {
 	ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, double interval);
 
 	/**
-	 * 
-	 * @return
+	 * Gets the taskmap stored by scheduler for @Stat and @Schedule beans
+	 * @return taskpmap of scheduler for @Stat and @Schedule beans
 	 */
 	Map<DIBean<?>, Set<Tuple<TaskProvider<?, ?>, ScheduledFuture<?>>>> getTasksMap();
 

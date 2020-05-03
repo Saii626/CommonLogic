@@ -1,25 +1,31 @@
 package app.saikat.ThreadManagement.AnnotationSupport;
 
+import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Provider;
 
+import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import app.saikat.Annotations.DIManagement.NoQualifier;
 import app.saikat.Annotations.DIManagement.Scan;
-import app.saikat.Annotations.GsonManagement.NoPretty;
 import app.saikat.Annotations.ThreadManagement.Schedule;
 import app.saikat.Annotations.ThreadManagement.Stats;
-import app.saikat.DIManagement.Exceptions.NotValidBean;
 import app.saikat.DIManagement.Impl.BeanManagers.BeanManagerImpl;
 import app.saikat.DIManagement.Impl.BeanManagers.InjectBeanManager;
 import app.saikat.DIManagement.Impl.BeanManagers.PostConstructBeanManager;
 import app.saikat.DIManagement.Impl.DIBeans.ConstantProviderBean;
 import app.saikat.DIManagement.Impl.DIBeans.DIBeanImpl;
+import app.saikat.DIManagement.Impl.Helpers.DependencyHelper;
 import app.saikat.DIManagement.Interfaces.DIBean;
 import app.saikat.ThreadManagement.interfaces.GenericSchedulerTask;
 
@@ -41,27 +47,52 @@ public class ScheduleBeanManager extends BeanManagerImpl {
 	@Override
 	public <T> void beanCreated(DIBean<T> bean) {
 
-		if (!(bean instanceof DIBeanImpl<?>)) {
-			throw new RuntimeException(String.format(
-					"Wrong bean type for Schedule/Stat bean. Expected type DIBeanImpl.class found %s", bean.getClass()
-							.getSimpleName()));
-		}
+		Preconditions.checkArgument(bean instanceof DIBeanImpl<?>,
+				"Wrong bean type for Schedule/Stat bean. Expected type DIBeanImpl.class found %s", bean.getClass()
+						.getSimpleName());
 
-		if (bean.getNonQualifierAnnotation()
-				.equals(Schedule.class) && ((DIBeanImpl<?>) bean).isMethod()
-				&& !bean.getProviderType()
-						.equals(TypeToken.of(Void.TYPE))) {
-			throw new NotValidBean(bean, "Schedule should not return value");
-		}
-
-		if (bean.getNonQualifierAnnotation()
-				.equals(Stats.class) && ((DIBeanImpl<?>) bean).isMethod()
-				&& bean.getProviderType()
-						.equals(TypeToken.of(Void.TYPE))) {
-			throw new NotValidBean(bean, "Stats should return value");
-		}
+		DIBeanImpl<?> b = (DIBeanImpl<?>) bean;
+		Preconditions.checkArgument(b.isMethod(), "Must be a method bean");
+		Preconditions.checkArgument(b.getProviderType()
+				.equals(TypeToken.of(Void.TYPE)), "Method should not return value");
 
 		super.beanCreated(bean);
+	}
+
+	@Override
+	public <T> List<DIBean<?>> resolveDependencies(DIBean<T> target, Collection<DIBean<?>> alreadyResolved,
+			Collection<DIBean<?>> toBeResolved, Collection<Class<? extends Annotation>> allQualifiers) {
+
+		if (target.getNonQualifierAnnotation()
+				.equals(Schedule.class)) {
+			return super.resolveDependencies(target, alreadyResolved, toBeResolved, allQualifiers);
+		} else {
+			DIBeanImpl<?> t = (DIBeanImpl<?>) target;
+
+			logger.debug("Scanning dependencies of {}", target);
+
+			List<DIBean<?>> unresolvedDependencies = DependencyHelper.scanAndSetDependencies(t, allQualifiers);
+			logger.debug("Unresolved dependencies of {}: {}", target, unresolvedDependencies);
+
+			Preconditions.checkArgument(unresolvedDependencies.size() == 2, "Has only 2 dependencies");
+
+			DIBean<?> unresolved = t.getDependencies()
+					.remove(1);
+			Preconditions.checkArgument(unresolved.getProviderType()
+					.equals(TypeToken.of(Logger.class)), "Only logger should be specified as dependency");
+
+			List<DIBean<?>> resolvedDependencies = DependencyHelper.resolveAndSetDependencies(t, alreadyResolved,
+					toBeResolved);
+			logger.debug("Resolved dependencies of {}: {}", target, resolvedDependencies);
+
+
+			Logger logger = LogManager.getLogger("stats_logger");
+			ConstantProviderBean<Logger> loggerProvider = new ConstantProviderBean<>(TypeToken.of(Logger.class), NoQualifier.class);
+			loggerProvider.setProvider(() -> logger);
+
+			t.getDependencies().add(loggerProvider);
+			return resolvedDependencies;
+		}
 	}
 
 	@Override
@@ -80,22 +111,6 @@ public class ScheduleBeanManager extends BeanManagerImpl {
 	}
 
 	public Set<GenericSchedulerTask<?, ?>> getToBeScheduledTasks() {
-		TypeToken<Gson> gsonTypeToken = TypeToken.of(Gson.class);
-		DIBean<?> gsonBean = repo.getBeans()
-				.parallelStream()
-				.filter(b -> b.getProviderType()
-						.equals(gsonTypeToken)
-						&& b.getQualifier()
-								.equals(NoPretty.class))
-				.findAny()
-				.orElseThrow(() -> new NullPointerException());
-
-		Gson gson = (Gson) gsonBean.getProvider()
-				.get();
-
-		toBeScheduledTasks.parallelStream()
-				.filter(task -> task instanceof StatLogTask)
-				.forEach(task -> ((StatLogTask<?, ?>) task).setGson(gson));
 		return this.toBeScheduledTasks;
 	}
 
