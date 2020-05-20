@@ -69,7 +69,7 @@ public class TaskProvider<PARENT, TYPE> implements Provider<TYPE> {
 
         if (parent != null) {
             ConstantProviderBean<PARENT> providerBean = strongEmptyProvider.copy();
-            providerBean.setProvider(() -> (PARENT) parent);
+            providerBean.setProvider(() -> parent);
             return providerBean;
         } else {
             return null;

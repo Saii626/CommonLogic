@@ -77,21 +77,16 @@ public class ScheduleBeanManager extends BeanManagerImpl {
 			Preconditions.checkArgument(unresolvedDependencies.size() == 2, "Has only 2 dependencies");
 
 			DIBean<?> unresolved = t.getDependencies()
-					.remove(1);
+					.get(1);
 			Preconditions.checkArgument(unresolved.getProviderType()
 					.equals(TypeToken.of(Logger.class)), "Only logger should be specified as dependency");
-
-			List<DIBean<?>> resolvedDependencies = DependencyHelper.resolveAndSetDependencies(t, alreadyResolved,
-					toBeResolved);
-			logger.debug("Resolved dependencies of {}: {}", target, resolvedDependencies);
-
 
 			Logger logger = LogManager.getLogger("stats_logger");
 			ConstantProviderBean<Logger> loggerProvider = new ConstantProviderBean<>(TypeToken.of(Logger.class), NoQualifier.class);
 			loggerProvider.setProvider(() -> logger);
 
-			t.getDependencies().add(loggerProvider);
-			return resolvedDependencies;
+			t.getDependencies().set(1, loggerProvider);
+			return null;
 		}
 	}
 

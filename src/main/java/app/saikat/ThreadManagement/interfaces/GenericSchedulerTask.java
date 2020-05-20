@@ -15,6 +15,7 @@ import app.saikat.DIManagement.Impl.DIBeans.ConstantProviderBean;
 import app.saikat.DIManagement.Impl.DIBeans.DIBeanImpl;
 import app.saikat.DIManagement.Impl.ExternalImpl.ProviderImpl;
 import app.saikat.DIManagement.Interfaces.DIBean;
+import app.saikat.DIManagement.Interfaces.DIBeanManager;
 import app.saikat.PojoCollections.CommonObjects.Tuple;
 import app.saikat.PojoCollections.Utils.CommonFunc;
 
@@ -74,12 +75,11 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 		ConstantProviderBean<PARENT> strongProvider = new ConstantProviderBean<>(parentBean.getProviderType(),
 				parentBean.getQualifier());
 
-		parentBean.getBeanManager()
-				.addListenerForBean(parentBean, (pBean, instance) -> {
+		DIBeanManager.addListenerForClass(parentBean.getProviderType().getRawType(), (pBean, instance) -> {
 					DIBean<TYPE> instanceTaskCopy = this.task.copy();
 
 					ConstantProviderBean<WeakReference<PARENT>> weakProviderCopy = weakProvider.copy();
-					weakProviderCopy.setProvider(() -> new WeakReference<>(instance));
+					weakProviderCopy.setProvider(() -> (WeakReference<PARENT>)new WeakReference<>(instance));
 
 					instanceTaskCopy.getDependencies()
 							.set(0, weakProviderCopy);

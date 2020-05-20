@@ -43,8 +43,9 @@ public class TestStats {
 		DIBean<A> aBean = manager.getBeanOfType(A.class);
 		DIBean<?> aStatBean = manager.getBeansWithType(Stats.class)
 				.parallelStream()
-				.filter(b -> aBean.equals(b.getDependencies()
-						.get(0)))
+				.filter(b -> b.getDependencies().get(0) != null)
+				.filter(b -> aBean.getProviderType().equals(b.getDependencies()
+						.get(0).getProviderType()))
 				.findAny()
 				.get();
 		Provider<A> aProvider = aBean.getProvider();
