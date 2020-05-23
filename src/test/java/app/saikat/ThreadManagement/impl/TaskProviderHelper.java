@@ -1,4 +1,4 @@
-package app.saikat.ThreadManagement.interfaces;
+package app.saikat.ThreadManagement.impl;
 
 public class TaskProviderHelper {
 

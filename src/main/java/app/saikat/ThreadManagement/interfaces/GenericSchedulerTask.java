@@ -9,6 +9,9 @@ import javax.inject.Provider;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import app.saikat.DIManagement.Impl.BeanManagers.InjectBeanManager;
 import app.saikat.DIManagement.Impl.BeanManagers.PostConstructBeanManager;
 import app.saikat.DIManagement.Impl.DIBeans.ConstantProviderBean;
@@ -18,6 +21,7 @@ import app.saikat.DIManagement.Interfaces.DIBean;
 import app.saikat.DIManagement.Interfaces.DIBeanManager;
 import app.saikat.PojoCollections.CommonObjects.Tuple;
 import app.saikat.PojoCollections.Utils.CommonFunc;
+import app.saikat.ThreadManagement.impl.TaskProvider;
 
 /**
  * A generic schedulable task
@@ -31,6 +35,8 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 
 	protected final InjectBeanManager injectBeanManager;
 	protected final PostConstructBeanManager postConstructBeanManager;
+
+	private Logger logger = LogManager.getLogger(this.getClass());
 
 	public GenericSchedulerTask(DIBean<TYPE> bean, InjectBeanManager injectBeanManager,
 			PostConstructBeanManager postConstructBeanManager) {
@@ -48,6 +54,7 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 		List<DIBean<?>> dependencies = task.getDependencies();
 
 		if (dependencies.get(0) == null) {
+			logger.debug("Scheduler task {} is static. Scheduling now");
 			// static method
 			ProviderImpl<TYPE> provider = new ProviderImpl<>((DIBeanImpl<TYPE>) task, injectBeanManager,
 					postConstructBeanManager);
@@ -57,6 +64,7 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 			Tuple<TaskProvider<?, ?>, ScheduledFuture<?>> tuple = Tuple.of(null, scheduledTask);
 			CommonFunc.safeAddToMapSet(this.scheduler.getTasksMap(), this.task, tuple);
 		} else {
+			logger.debug("Scheduler task {} is not static. Setting up listeners", task);
 			setupListenerAndSchedule();
 		}
 	}
@@ -75,11 +83,16 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 		ConstantProviderBean<PARENT> strongProvider = new ConstantProviderBean<>(parentBean.getProviderType(),
 				parentBean.getQualifier());
 
-		DIBeanManager.addListenerForClass(parentBean.getProviderType().getRawType(), (pBean, instance) -> {
+		logger.debug("Setting up listener for type {}", parentBean.getProviderType());
+		DIBeanManager.addListenerForClass(parentBean.getProviderType()
+				.getRawType(), (pBean, instance) -> {
+					logger.debug("New instance {} created for {} bean. Scheduling task {} for this instance", instance,
+							pBean, task);
+
 					DIBean<TYPE> instanceTaskCopy = this.task.copy();
 
 					ConstantProviderBean<WeakReference<PARENT>> weakProviderCopy = weakProvider.copy();
-					weakProviderCopy.setProvider(() -> (WeakReference<PARENT>)new WeakReference<>(instance));
+					weakProviderCopy.setProvider(() -> (WeakReference<PARENT>) new WeakReference<>(instance));
 
 					instanceTaskCopy.getDependencies()
 							.set(0, weakProviderCopy);
@@ -87,10 +100,12 @@ public abstract class GenericSchedulerTask<PARENT, TYPE> {
 					TaskProvider<PARENT, TYPE> taskRunner = new TaskProvider<>(instanceTaskCopy, strongProvider,
 							injectBeanManager, postConstructBeanManager);
 
+					logger.debug("Scheduling provider {}", taskRunner);
 					ScheduledFuture<TYPE> scheduledTask = scheduleExecutingProvider(taskRunner);
 
 					Tuple<TaskProvider<?, ?>, ScheduledFuture<?>> tuple = Tuple.of(taskRunner, scheduledTask);
 					taskRunner.setOnParentDied(t -> {
+						logger.debug("Parent died. Removing scheduled task {}", t);
 						scheduledTask.cancel(true);
 						CommonFunc.safeRemoveFromMapSet(this.scheduler.getTasksMap(), this.task, tuple);
 					});

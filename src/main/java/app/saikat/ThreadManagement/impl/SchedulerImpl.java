@@ -13,7 +13,6 @@ import app.saikat.DIManagement.Interfaces.DIBean;
 import app.saikat.PojoCollections.CommonObjects.Tuple;
 import app.saikat.ThreadManagement.AnnotationSupport.ScheduleBeanManager;
 import app.saikat.ThreadManagement.interfaces.Scheduler;
-import app.saikat.ThreadManagement.interfaces.TaskProvider;
 
 class SchedulerImpl implements Scheduler {
 

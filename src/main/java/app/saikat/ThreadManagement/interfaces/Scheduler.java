@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledFuture;
 
 import app.saikat.DIManagement.Interfaces.DIBean;
 import app.saikat.PojoCollections.CommonObjects.Tuple;
+import app.saikat.ThreadManagement.impl.TaskProvider;
 
 public interface Scheduler {
 

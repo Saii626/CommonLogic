@@ -16,8 +16,8 @@ import app.saikat.DIManagement.Interfaces.DIBean;
 import app.saikat.DIManagement.Interfaces.DIManager;
 import app.saikat.PojoCollections.CommonObjects.Tuple;
 import app.saikat.ThreadManagement.interfaces.Scheduler;
-import app.saikat.ThreadManagement.interfaces.TaskProvider;
-import app.saikat.ThreadManagement.interfaces.TaskProviderHelper;
+import app.saikat.ThreadManagement.impl.TaskProvider;
+import app.saikat.ThreadManagement.impl.TaskProviderHelper;
 
 public class TestStats {
 
